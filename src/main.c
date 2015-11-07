@@ -126,8 +126,10 @@ void handle_servos (void)
       DATA_LOG.SERVO1 = 100;
       DATA_LOG.SERVO2 = 100;
       DATA_LOG.SERVO3 = 100;
+#if (SERVO_CONNECTED == 1)
       set_servo_pos(0, 100);
       set_servo_pos(1, 100);
+#endif
       gpioWrite(RELAY_1, 1); // Set RELAY_1 high.
       SERVO.servo_state = SERVO_ON;
       g_log_counter = 10; // log data to sd card
@@ -142,19 +144,21 @@ void handle_servos (void)
       DATA_LOG.SERVO1 = 0;
       DATA_LOG.SERVO2 = 0;
       DATA_LOG.SERVO3 = 0;
+#if (SERVO_CONNECTED == 1)
       set_servo_pos(0, 0);
       set_servo_pos(1, 0);
+#endif
       gpioWrite(RELAY_1, 0); // Set RELAY_1 low.
       SERVO.servo_state = SERVO_OFF;
       g_log_counter = 10; // log data to sd card
       gpioTime(PI_TIME_ABSOLUTE , &SERVO.servo_time, &mics);
    }
-
+#if (SERVO_CONNECTED == 1)
    for (i = 0; i < 2; ++i)
    {
       if ((1 == servos[i].on) && (current_time > servos[i].time + 4)) set_servo_pos(i, 255);  //stop the servo after 4 seconds
    }
-
+#endif
 }
 void change_diff_temp_circuit_1(void)
 {
@@ -368,7 +372,7 @@ int main ()
    gpioSetMode(PUMP_2_GPIO, PI_OUTPUT);
 
    gpioSetMode(RELAY_1, PI_OUTPUT); // Set RELAY_1 as output.
-#if (THREAD_MOTOR_CONTROL == 0)
+#if 0
    gpioSetPWMrange(PUMP_1_GPIO, 100); //set range of the pwm to be 100 units
    gpioSetPWMrange(PUMP_2_GPIO, 100);
 #endif
@@ -389,16 +393,16 @@ int main ()
    printf("%s %d\n", __FUNCTION__, __LINE__);
 */
    //=====================================================================================
+#if (THREAD_MOTOR_CONTROL == 1)
    gpioSetMode(CONPARATOR_INPUT, PI_INPUT);  // Set CONPARATOR_INPUT as input.
-   gpioSetMode(BUTTON_INPUT, PI_INPUT);  // Set BUTTON_INPUT as input.
    gpioSetPullUpDown(CONPARATOR_INPUT, PI_PUD_UP);   // Sets a pull-up.
-   gpioSetPullUpDown(BUTTON_INPUT, PI_PUD_UP);   // Sets a pull-up.
-
    gpioSetAlertFunc(CONPARATOR_INPUT, zero_crossing);
-   gpioSetAlertFunc(BUTTON_INPUT, LcdI2cBackLightOn);
-
    gpioSetWatchdog(CONPARATOR_INPUT, 3000); // call zero_crossing function after 3 seconds if no
                                           // no level change has been detected for the gpio
+#endif
+   gpioSetMode(BUTTON_INPUT, PI_INPUT);  // Set BUTTON_INPUT as input.
+   gpioSetPullUpDown(BUTTON_INPUT, PI_PUD_UP);   // Sets a pull-up.
+   gpioSetAlertFunc(BUTTON_INPUT, LcdI2cBackLightOn);
    printf("%s %d\n", __FUNCTION__, __LINE__);
 
    // Launch lcd back light thread
@@ -476,6 +480,25 @@ int main ()
          //handle_single_temp_sensor_circuit();
          handle_servos ();
       }
+#if (THREAD_MOTOR_CONTROL == 0)
+      if (pump1_pwm > 0)
+      {
+         gpioWrite(PUMP_1_GPIO, 0);
+      }
+      else
+      {
+         gpioWrite(PUMP_1_GPIO, 1);
+      }
+
+      if (pump2_pwm > 0)
+      {
+         gpioWrite(PUMP_2_GPIO, 0);
+      }
+      else
+      {
+         gpioWrite(PUMP_2_GPIO, 1);
+      }
+#endif
       //DATA_LOG.ADC5 = TEMP_ADC_CH(AC_TRANSFORMATOR_SENSOR);
 
       //DATA_LOG.ADC7 = TEMP_ADC_CH(LM35);

@@ -17,7 +17,8 @@
 
 #define RELAY_1      17
 
-#define THREAD_MOTOR_CONTROL     1
+#define THREAD_MOTOR_CONTROL     0
+#define SERVO_CONNECTED          0
 
 typedef struct servo_state_tag
 {

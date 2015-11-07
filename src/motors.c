@@ -183,7 +183,7 @@ void zero_crossing(int gpio, int level, unsigned int tick)
             //printf("gpio %d became %d at %ud\n", gpio, level, tick);
             //printf("%u\n",tick);
 
-#if (THREAD_MOTOR_CONTROL == 0)
+#if  0
             //pump 2
             if (pump2_pwm > 90) gpioWrite(PUMP_2_GPIO, 0);
             else if (pump2_pwm < 10) gpioWrite(PUMP_2_GPIO, 1);
